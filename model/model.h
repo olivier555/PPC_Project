@@ -25,31 +25,34 @@ public:
         Domain(std::vector<int> d) : domain(d), nbValue(d.size()), currentDomain(d) {}
     };
     struct Constraint {
-        std::vector<std::pair<int, int>> constraint;
-        int nbValues;
+        int firstVariable;
+        int secondVariable;
+        std::map<int, std::vector<int>> constraintMap;
         Constraint() {};
-        Constraint(std::vector<std::pair<int, int>> c) : constraint(c), nbValues(c.size()) {}
+        Constraint(int var1, int var2, std::map<int, std::vector<int>> c) : 
+                firstVariable(var1), secondVariable(var2), constraintMap(c) {}
     };
-    //model();
-    //model(const model& orig);
-    //virtual ~model();
-    void setNbVariables(int nbVar) {nbVariables = nbVar;};
-    void setDomain(int var_idx, Domain domain) {domains.insert(std::make_pair(var_idx, domain));};
-    void addConstraint(std::pair<int, int> variables, model::Constraint constraint) {
-        constraints.insert(std::make_pair(variables, constraint));
+    void setNbVariables(int nbVar) {
+        nbVariables = nbVar;
     };
+    void setDomains(std::vector<Domain> d) {domains = d;};
+    void addConstraints(std::vector<std::vector<Constraint>> c) {constraints = c;};
     int getNbVariables() {return nbVariables;};
-    std::map<int, model::Domain> getDomains() {return domains;};
-    model::Domain getDomain(int var_idx) {return domains[var_idx];};
-    std::map<std::pair<int, int>, model::Constraint> getConstraints() {return constraints;};
+    std::vector<model::Domain> getDomains() {return domains;};
+    model::Domain getDomain(int varIdx) {return domains[varIdx];};
+    std::vector<std::vector<model::Constraint>> getConstraints() {return constraints;};
+    std::vector<model::Constraint> getConstraint(int varIdx) {return constraints[varIdx];};
     
     void removeValueFromDomain(int var, int v) {
         domains[var].domain.erase(std::remove(domains[var].domain.begin(), domains[var].domain.end(), v), domains[var].domain.end());
     }
+    void swapValues(int variable, int idx1, int idx2) {
+        std::iter_swap(domains[variable].currentDomain.begin() + idx1, domains[variable].currentDomain.begin() + idx2);
+    }
 private:
     int nbVariables;
-    std::map<int, Domain> domains;
-    std::map<std::pair<int, int>, Constraint> constraints;
+    std::vector<Domain> domains;
+    std::vector<std::vector<Constraint>> constraints;
 };
 
 #endif /* MODEL_H */

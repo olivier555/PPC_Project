@@ -28,28 +28,20 @@ void arcConsistancer::initArcConsistance(model& mod) {
     std::set<std::pair<int, int>> Q;
     std::map<std::pair<int, int>, std::vector<std::pair<int, int>>> S;
     std::map<std::pair<std::pair<int, int>, int>, int> count;
-    std::map<std::pair<int, int>, model::Constraint> constraints = mod.getConstraints();
+    std::vector<std::vector<model::Constraint>> constraints = mod.getConstraints();
     std::map<std::pair<int, int>, model::Constraint>::iterator it;
-    for (it = constraints.begin(); it != constraints.end(); it++) {
-        for (int dom = 0; dom <= 1; dom++) {
-            int varX, varY;
-            if (dom == 0) {
-                varX = it->first.second;
-                varY = it->first.first;
-            } else {
-                varX = it->first.first;
-                varY = it->first.second;
-            }
+    for (int varX = 0; varX < int(constraints.size()); varX++) {
+        for (int i = 0; i < int(constraints[varX].size()); i++) {
+            int varY = constraints[varX][i].secondVariable;
             std::vector<int> domainX = mod.getDomain(varX).domain;
             std::vector<int> domainY = mod.getDomain(varY).domain;
             for (std::vector<int>::iterator itDX = domainX.begin(); itDX != domainX.end(); itDX++) {
                 int total = 0;
                 std::pair<int, int> pairX = std::make_pair(varX, *itDX);
                 for (std::vector<int>::const_iterator itDY = domainY.begin(); itDY != domainY.end(); itDY++) {
-                    std::pair<int, int> pairValues = std::make_pair(*itDX, *itDY);
-                    if (std::find(it->second.constraint.begin(),
-                            it->second.constraint.end(),
-                            pairValues) != it->second.constraint.end()) {
+                    if (std::find(constraints[varX][i].constraintMap[*itDX].begin(),
+                            constraints[varX][i].constraintMap[*itDX].end(),
+                            *itDY) != constraints[varX][i].constraintMap[*itDX].end()) {
                         total++;
                         std::pair<int, int> pairY = std::make_pair(varY, *itDY);
                         if (S.count(pairY) != 0) {
