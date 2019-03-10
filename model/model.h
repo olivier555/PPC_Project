@@ -9,11 +9,14 @@
 #define MODEL_H
 
 #include <algorithm>
+#include <random>
 #include <utility>
 #include <vector>
 #include <map>
 
 using namespace std;
+
+auto rng = std::default_random_engine {};
 
 class model {
 public:
@@ -27,10 +30,10 @@ public:
     struct Constraint {
         int firstVariable;
         int secondVariable;
-        std::map<int, std::vector<int>> constraintMap;
+        std::vector<std::vector<bool>> constraintVect;
         Constraint() {};
-        Constraint(int var1, int var2, std::map<int, std::vector<int>> c) : 
-                firstVariable(var1), secondVariable(var2), constraintMap(c) {}
+        Constraint(int var1, int var2, std::vector<std::vector<bool>> c) : 
+                firstVariable(var1), secondVariable(var2), constraintVect(c) {}
     };
     void setNbVariables(int nbVar) {
         nbVariables = nbVar;
@@ -48,6 +51,11 @@ public:
     }
     void swapValues(int variable, int idx1, int idx2) {
         std::iter_swap(domains[variable].currentDomain.begin() + idx1, domains[variable].currentDomain.begin() + idx2);
+    }
+    void randomize() {
+        for (int i = 0; i < int(domains.size()); i++) {
+            std::shuffle(std::begin(domains[i].currentDomain), std::end(domains[i].currentDomain), rng);
+        }
     }
 private:
     int nbVariables;

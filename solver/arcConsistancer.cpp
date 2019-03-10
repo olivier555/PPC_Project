@@ -39,9 +39,7 @@ void arcConsistancer::initArcConsistance(model& mod) {
                 int total = 0;
                 std::pair<int, int> pairX = std::make_pair(varX, *itDX);
                 for (std::vector<int>::const_iterator itDY = domainY.begin(); itDY != domainY.end(); itDY++) {
-                    if (std::find(constraints[varX][i].constraintMap[*itDX].begin(),
-                            constraints[varX][i].constraintMap[*itDX].end(),
-                            *itDY) != constraints[varX][i].constraintMap[*itDX].end()) {
+                    if (constraints[varX][i].constraintVect[*itDX][*itDY]) {
                         total++;
                         std::pair<int, int> pairY = std::make_pair(varY, *itDY);
                         if (S.count(pairY) != 0) {

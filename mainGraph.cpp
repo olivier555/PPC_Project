@@ -1,34 +1,23 @@
 
-/* 
- * File:   main.cpp
- * Author: oliv
- *
- * Created on February 9, 2019, 11:10 AM
- */
-
 #include <cstdlib>
 #include <ostream>
 #include <iostream>
 #include <chrono>
-#include "model/queens.h"
-#include "model/queens.cpp"
+#include "model/graphColoring.h"
+#include "model/graphColoring.cpp"
 #include "solver/arcConsistancer.h"
 #include "solver/arcConsistancer.cpp"
 #include "solver/solver.h"
 #include "solver/solver.cpp"
-
 using namespace std;
 
-/*
- * 
- */
 int main(int argc, char** argv) {
 
-    queens q(std::atoi(argv[1]));
-    cout << q.getNbVariables() << endl;
-    /*std::map<int, model::Domain> domains = q.getDomains();
+    graphColoring g(argv[1], std::atoi(argv[2]));
+    cout << "nbVariables: " << g.getNbVariables() << endl;
+    /*std::vector<model::Domain> domains = g.getDomains();
     cout << "Domains:" << endl;
-    for (int var = 0; var != q.getNbVariables(); var++) {
+    for (int var = 0; var != g.getNbVariables(); var++) {
         model::Domain d = domains[var];
         cout << var << endl;
         for (std::vector<int>::const_iterator it = d.domain.begin(); it != d.domain.end(); it++) {
@@ -37,7 +26,7 @@ int main(int argc, char** argv) {
         cout << endl;
     }
     cout << "Constraints:" << endl;
-    std::vector<std::vector<model::Constraint>> constraints = q.getConstraints();
+    std::vector<std::vector<model::Constraint>> constraints = g.getConstraints();
     for (std::vector<std::vector<model::Constraint>>::const_iterator it = constraints.begin(); it != constraints.end(); it++) {
         for (std::vector<model::Constraint>::const_iterator it2 = it->begin(); it2 != it->end(); it2++) {
             cout << "Variables: " << it2->firstVariable << ' ' << it2->secondVariable << endl;
@@ -51,8 +40,8 @@ int main(int argc, char** argv) {
             cout << endl;
         }
     }*/
-    //arcConsistancer ac;
-    //ac.initArcConsistance(q);
+    arcConsistancer ac;
+    ac.initArcConsistance(g);
     /*cout << "Domains:" << endl;
     std::map<int, model::Domain> domainsModif = q.getDomains();
     for (int var = 0; var != q.getNbVariables(); var++) {
@@ -63,29 +52,33 @@ int main(int argc, char** argv) {
         }
         cout << endl;
     }*/
-    //ac.finishArcConsistance(q);
-    /*cout << "Domains:" << endl;
-    std::map<int, model::Domain> domainsModifFinal = q.getDomains();
-    for (int var = 0; var != q.getNbVariables(); var++) {
+    ac.finishArcConsistance(g);
+    cout << "Domains:" << endl;
+    std::vector<model::Domain> domainsModifFinal = g.getDomains();
+    for (int var = 0; var != g.getNbVariables(); var++) {
         model::Domain d = domainsModifFinal[var];
         cout << var << endl;
         for (std::vector<int>::const_iterator it = d.domain.begin(); it != d.domain.end(); it++) {
             cout << *it << ' ';
         }
         cout << endl;
-    }*/
-    q.randomize();
+    }
+    //q.randomize();
     cout << "Start solving ..." << endl;
     auto t1 = std::chrono::high_resolution_clock::now();
-    solver solv(q, false);
-    solv.branchAndBound();
+    solver solv(g, false);
+    bool isImpossible = solv.branchAndBound();
     auto t2 = std::chrono::high_resolution_clock::now();
-    std::vector<solver::Node> nodes = solv.getNodes();
-    /*cout << "Solution:" << endl;
-    cout << "variable - value" << endl;
-    for (int i = 0; i < int(nodes.size()); i++) {
-        cout << nodes[i].variable << " - " << q.getDomain(nodes[i].variable).currentDomain[nodes[i].idxChosen] << endl;
-    }*/
+    if (isImpossible) {
+        cout << "Infeasible model" << endl;
+    } else {
+        std::vector<solver::Node> nodes = solv.getNodes();
+        cout << "Solution:" << endl;
+        cout << "variable - value" << endl;
+        for (int i = 0; i < int(nodes.size()); i++) {
+            cout << nodes[i].variable << " - " << g.getDomain(nodes[i].variable).currentDomain[nodes[i].idxChosen] << endl;
+        }
+    }
     std::cout << "Solving took "
               << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
               << " milliseconds\n";
