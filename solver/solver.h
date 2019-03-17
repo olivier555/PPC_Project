@@ -28,13 +28,14 @@ public:
     bool makeStep(bool& isImpossible);
     std::vector<int> getInitialIdxMax();
     std::vector<int> getOrderVariables(bool isRandomOrder);
-    bool forwardCheck(int variable, int value, std::vector<int>& newIdxMax);
+    bool forwardCheck(int variable, int value, std::vector<int>& newIdxMax, int& nextVariable);
     std::vector<solver::Node> getNodes() {return nodes;};
 private:
     model& mod;
     std::vector<Node> nodes;
     std::vector<int> variablesOrdered;
     int idxCurrent;
+    int nbNodes;
 };
 
 #endif /* SOLVER_H */

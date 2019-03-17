@@ -24,9 +24,17 @@ using namespace std;
  */
 int main(int argc, char** argv) {
 
+    cout << "Model generation ..." << endl;
+    
+    auto t3 = std::chrono::high_resolution_clock::now();
     queens q(std::atoi(argv[1]));
-    cout << q.getNbVariables() << endl;
-    /*std::map<int, model::Domain> domains = q.getDomains();
+    
+    auto t4 = std::chrono::high_resolution_clock::now();
+    cout << "Number of variables: " << q.getNbVariables() << endl;
+    std::cout << "Generation took "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(t4-t3).count()
+              << " milliseconds\n";
+    /*std::vector<model::Domain> domains = q.getDomains();
     cout << "Domains:" << endl;
     for (int var = 0; var != q.getNbVariables(); var++) {
         model::Domain d = domains[var];
@@ -80,12 +88,12 @@ int main(int argc, char** argv) {
     solver solv(q, false);
     solv.branchAndBound();
     auto t2 = std::chrono::high_resolution_clock::now();
-    std::vector<solver::Node> nodes = solv.getNodes();
-    /*cout << "Solution:" << endl;
-    cout << "variable - value" << endl;
-    for (int i = 0; i < int(nodes.size()); i++) {
-        cout << nodes[i].variable << " - " << q.getDomain(nodes[i].variable).currentDomain[nodes[i].idxChosen] << endl;
-    }*/
+    //std::vector<solver::Node> nodes = solv.getNodes();
+    //cout << "Solution:" << endl;
+    //cout << "variable - value" << endl;
+    //for (int i = 0; i < int(nodes.size()); i++) {
+    //    cout << nodes[i].variable << " - " << q.getDomain(nodes[i].variable).currentDomain[nodes[i].idxChosen] << endl;
+    //}
     std::cout << "Solving took "
               << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
               << " milliseconds\n";
