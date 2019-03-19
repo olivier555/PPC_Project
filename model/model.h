@@ -27,27 +27,22 @@ public:
         Domain() {};
         Domain(std::vector<int> d) : domain(d), nbValue(d.size()), currentDomain(d) {}
     };
-    struct Constraint {
-        int firstVariable;
-        int secondVariable;
-        std::vector<std::vector<bool>> constraintVect;
-        Constraint() {};
-        Constraint(int var1, int var2, std::vector<std::vector<bool>> c) : 
-                firstVariable(var1), secondVariable(var2), constraintVect(c) {}
-    };
     void setNbVariables(int nbVar) {
         nbVariables = nbVar;
     };
+    void setDomain(Domain d, int var) {domains[var] = d;};
     void setDomains(std::vector<Domain> d) {domains = d;};
-    void addConstraints(std::vector<std::vector<Constraint>> c) {constraints = c;};
+    void addConstraints(std::vector<std::vector<int>> c) {constraints = c;};
     int getNbVariables() {return nbVariables;};
     std::vector<model::Domain> getDomains() {return domains;};
     model::Domain getDomain(int varIdx) {return domains[varIdx];};
-    std::vector<std::vector<model::Constraint>> getConstraints() {return constraints;};
-    std::vector<model::Constraint> getConstraint(int varIdx) {return constraints[varIdx];};
+    std::vector<std::vector<int>> getConstraints() {return constraints;};
+    std::vector<int> getConstraint(int varIdx) {return constraints[varIdx];};
     
     void removeValueFromDomain(int var, int v) {
         domains[var].domain.erase(std::remove(domains[var].domain.begin(), domains[var].domain.end(), v), domains[var].domain.end());
+        domains[var].currentDomain.erase(std::remove(domains[var].currentDomain.begin(), domains[var].currentDomain.end(), v), domains[var].currentDomain.end());
+        domains[var].nbValue--;
     }
     void swapValues(int variable, int idx1, int idx2) {
         std::iter_swap(domains[variable].currentDomain.begin() + idx1, domains[variable].currentDomain.begin() + idx2);
@@ -57,10 +52,11 @@ public:
             std::shuffle(std::begin(domains[i].currentDomain), std::end(domains[i].currentDomain), rng);
         }
     }
+    virtual bool isBreakingConstraint(int var1, int val1, int var2, int val2) = 0;
 private:
     int nbVariables;
     std::vector<Domain> domains;
-    std::vector<std::vector<Constraint>> constraints;
+    std::vector<std::vector<int>> constraints;
 };
 
 #endif /* MODEL_H */

@@ -23,7 +23,6 @@ public:
         std::vector<Node> nodes;
         variablesOrdered = getOrderVariables(isRandomOrder);
     };
-    //virtual ~solver();
     bool branchAndBound();
     bool makeStep(bool& isImpossible);
     std::vector<int> getInitialIdxMax();

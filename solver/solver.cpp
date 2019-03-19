@@ -16,16 +16,13 @@ auto rngSolver = std::default_random_engine {};
 bool solver::branchAndBound() {
     nbNodes = 1;
     std::vector<int> initialIdxMax = getInitialIdxMax();
+    int initialVar = std::distance(initialIdxMax.begin(), std::min_element(initialIdxMax.begin(), initialIdxMax.end()));
     bool notSolved = true;
     bool isImpossible = false;
-    nodes.push_back(solver::Node(variablesOrdered[idxCurrent], 0, initialIdxMax));
-    //unsigned long int nbNodesConsidered = 0;
+    nodes.push_back(solver::Node(initialVar, 0, initialIdxMax));
     while (notSolved) {
-        //nbNodesConsidered++;
-        //cout << "Variable: " << nodes.back().variable << endl;
-        //cout << "Value: " << mod.getDomain(nodes.back().variable).currentDomain[nodes.back().idxChosen] << endl;
         if(nbNodes % 1000 ==0) {
-            cout << "nbNodes: " << nbNodes << " variable: " << nodes.back().variable << endl;
+            cout << "Number of nodes: " << nbNodes << endl;
         }
         notSolved = makeStep(isImpossible);
     }
@@ -55,7 +52,7 @@ std::vector<int> solver::getInitialIdxMax() {
 
 bool solver::makeStep(bool& isImpossible) {
     bool notSolved = true;
-    int nextVariable;
+    int nextVariable = - 1;
     std::vector<int> newIdxMax(nodes.back().idxMax);
     bool isPossible = forwardCheck(nodes.back().variable,
             mod.getDomain(nodes.back().variable).currentDomain[nodes.back().idxChosen],
@@ -66,6 +63,9 @@ bool solver::makeStep(bool& isImpossible) {
             notSolved = false;
         } else {
             newIdxMax[nodes.back().variable] = - 1;
+            if (nextVariable == - 1) {
+                nextVariable = std::distance(newIdxMax.begin(), std::max_element(newIdxMax.begin(), newIdxMax.end()));
+            }
             nbNodes++;
             nodes.push_back(solver::Node(nextVariable, 0, newIdxMax));
         }
@@ -75,20 +75,19 @@ bool solver::makeStep(bool& isImpossible) {
         } else if (int(nodes.size()) == 1) {
             isImpossible = true;
             notSolved = false;
-            std::cout << "impossible" << std::endl;
+            std::cout << "Impossible" << std::endl;
         } else {
             bool variableUsable = false;
             while (not variableUsable) {
-                //idxCurrent--;
                 nodes.pop_back();
-                if (nodes.back().idxChosen < nodes.back().idxMax[nodes.back().variable] - 1) {
-                    nodes.back().idxChosen++;
-                    variableUsable = true;
-                } else if (int(nodes.size()) == 0) {
+                if (int(nodes.size()) == 0) {
                     isImpossible = true;
                     notSolved = false;
-                    std::cout << "impossible" << std::endl;
+                    std::cout << "Impossible" << std::endl;
                     break;
+                } else if (nodes.back().idxChosen < nodes.back().idxMax[nodes.back().variable] - 1) {
+                    nodes.back().idxChosen++;
+                    variableUsable = true;
                 }
             }
         }
@@ -97,32 +96,23 @@ bool solver::makeStep(bool& isImpossible) {
 }
 
 bool solver::forwardCheck(int variable, int value, std::vector<int>& newIdxMax, int& nextVariable) {
-    std::vector<model::Constraint> constraints = mod.getConstraint(variable);
+    std::vector<int> constraints = mod.getConstraint(variable);
     int minDomain = mod.getNbVariables();
-    for (std::vector<model::Constraint>::const_iterator it = constraints.begin();
+    for (std::vector<int>::const_iterator it = constraints.begin();
             it != constraints.end();
             it++) {
-        int secondVariable = it->secondVariable;
-        if (newIdxMax[secondVariable] != - 1) {
-            //cout << "first and second variable: " << it->firstVariable << " & " << it->secondVariable << endl;
-            //std::vector<int> currentDomain = mod.getDomain(secondVariable).currentDomain;
-            //cout << "max domain: " << newIdxMax[secondVariable] << endl;
-            //for (int j = 0; j < int(currentDomain.size()); j++) {
-            //    cout << currentDomain[j] << ' ';
-            //}
-            //cout << endl;
-            for (int j = newIdxMax[secondVariable] - 1; j >= 0; j--) {
-                if (not it->constraintVect[value][mod.getDomain(secondVariable).currentDomain[j]]) {
-                    //cout << "value removed: " << currentDomain[j] << endl;
-                    newIdxMax[secondVariable]--;
-                    mod.swapValues(secondVariable, j, newIdxMax[secondVariable]);
+        if (newIdxMax[*it] != - 1) {
+            for (int j = newIdxMax[*it] - 1; j >= 0; j--) {
+                if (mod.isBreakingConstraint(variable, value, *it, mod.getDomain(*it).currentDomain[j])) {
+                    newIdxMax[*it]--;
+                    mod.swapValues(*it, j, newIdxMax[*it]);
                 }
             }
-            if (newIdxMax[secondVariable] == 0) {
+            if (newIdxMax[*it] == 0) {
                 return false;
-            } else if (newIdxMax[secondVariable] < minDomain) {
-                nextVariable = secondVariable;
-                minDomain = newIdxMax[secondVariable];
+            } else if (newIdxMax[*it] < minDomain) {
+                nextVariable = *it;
+                minDomain = newIdxMax[*it];
             }
         }
     }

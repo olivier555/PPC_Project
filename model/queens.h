@@ -13,6 +13,7 @@
 class queens : public model{
 public:
     queens(int);
+    bool isBreakingConstraint(int var1, int val1, int var2, int val2);
 private:
 
 };

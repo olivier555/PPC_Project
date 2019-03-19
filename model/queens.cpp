@@ -20,24 +20,21 @@ queens::queens(int nbLines) {
         domains.push_back(d);
     }
     setDomains(domains);
-    std::vector<std::vector<std::vector<bool>>> constraintDiff(nbLines - 1, vector<vector<bool>>(nbLines, vector<bool>(nbLines, true)));
-    for (int diff = 1; diff < nbLines; diff++) {
-        for (int d=0; d < nbLines; d++) {
-            constraintDiff[diff - 1][d][d] = false;
-            if (d - diff >= 0) {
-                constraintDiff[diff - 1][d][d - diff] = false;
-            }
-            if (d + diff <= nbLines - 1) {
-                constraintDiff[diff - 1][d][d + diff] = false;
-            }
-        }
-    }
-    std::vector<std::vector<Constraint>> constraints(nbLines, vector<Constraint>(nbLines - 1));
+    std::vector<std::vector<int>> constraints(nbLines, vector<int>(nbLines - 1));
     for (int var1=0; var1<nbLines - 1; var1++) {
         for (int var2=var1 + 1; var2<nbLines; var2++) {
-            constraints[var1][var2 - 1] = Constraint(var1, var2, constraintDiff[abs(var2 - var1) - 1]);
-            constraints[var2][var1] = Constraint(var2, var1, constraintDiff[abs(var1 - var2) - 1]);
+            constraints[var1][var2 - 1] = var2;
+            constraints[var2][var1] = var1;
         }
     }
     addConstraints(constraints);
+}
+
+bool queens::isBreakingConstraint(int var1, int val1, int var2, int val2) {
+    if (val1 == val2) {
+        return true;
+    } else if (abs(var1 - var2) == abs(val1 - val2)) {
+        return true;
+    }
+    return false;
 }

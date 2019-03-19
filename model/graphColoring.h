@@ -13,9 +13,12 @@ using namespace std;
 
 class graphColoring  : public model {
 public:
-    graphColoring(string pathFile, int nbColors);
+    graphColoring(string pathFile, int nbColorsVar);
     void readFile(string pathFile);
+    bool isBreakingConstraint(int var1, int val1, int var2, int val2);
+    void simplifyModel();
 private:
+    int nbColors;
     int nbNodes;
     int nbEdges;
     std::vector<std::pair<int, int>> edges;

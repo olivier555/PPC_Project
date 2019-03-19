@@ -28,18 +28,18 @@ void arcConsistancer::initArcConsistance(model& mod) {
     std::set<std::pair<int, int>> Q;
     std::map<std::pair<int, int>, std::vector<std::pair<int, int>>> S;
     std::map<std::pair<std::pair<int, int>, int>, int> count;
-    std::vector<std::vector<model::Constraint>> constraints = mod.getConstraints();
-    std::map<std::pair<int, int>, model::Constraint>::iterator it;
+    std::vector<std::vector<int>> constraints = mod.getConstraints();
+    std::map<std::pair<int, int>, int>::iterator it;
     for (int varX = 0; varX < int(constraints.size()); varX++) {
         for (int i = 0; i < int(constraints[varX].size()); i++) {
-            int varY = constraints[varX][i].secondVariable;
+            int varY = constraints[varX][i];
             std::vector<int> domainX = mod.getDomain(varX).domain;
             std::vector<int> domainY = mod.getDomain(varY).domain;
             for (std::vector<int>::iterator itDX = domainX.begin(); itDX != domainX.end(); itDX++) {
                 int total = 0;
                 std::pair<int, int> pairX = std::make_pair(varX, *itDX);
                 for (std::vector<int>::const_iterator itDY = domainY.begin(); itDY != domainY.end(); itDY++) {
-                    if (constraints[varX][i].constraintVect[*itDX][*itDY]) {
+                    if (not mod.isBreakingConstraint(varX, *itDX, varY, *itDY)) {
                         total++;
                         std::pair<int, int> pairY = std::make_pair(varY, *itDY);
                         if (S.count(pairY) != 0) {
@@ -68,9 +68,6 @@ void arcConsistancer::initArcConsistance(model& mod) {
 }
 
 void arcConsistancer::finishArcConsistance(model& mod) {
-    //std::set<std::pair<int, int>> Q = getQ();
-    //std::map<std::pair<int, int>, std::vector<std::pair<int, int>>> S = getS();
-    //std::map<std::pair<std::pair<int, int>, int>, int> count = getCount();
     while (Q.size() != 0) {
         std::pair<int, int> pairQ = *Q.begin();
         if (S.count(pairQ) != 0) {
